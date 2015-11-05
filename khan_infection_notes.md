@@ -9,3 +9,7 @@ Also, I need to figure out how I will partition the connected components if it t
 Also, I'm assuming 10 million users (somewhere on the internet it said that Khan Academy gets that many unique visitors each month). If the actual number is much larger, then my program might struggle to run in the memory of a single machine. In that case, I should possibly look at distributed algorithms for graph processing. In the past, I've read a little bit about processing graphs with hadoop. Something to look into.
 
 Time to explore for a while...
+
+I just tried out the connected component algorithm on a file of 10 million users and the recursion limit for depth first search was reached. 
+
+The change to breadth-first search seems to work much better. I was able to find an algorithm to search for a combination of connected components that adds up as close to a certain number as possible.  
