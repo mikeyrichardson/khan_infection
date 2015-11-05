@@ -6,4 +6,6 @@ After writing the code to extract the connected components, I will use the count
 
 Also, I need to figure out how I will partition the connected components if it turns out that too many users are grouped into large connected components. For example, if 1000 users are grouped into two components of sizes 400 and 600, but I only want to infect about 100 users, how will I decide how to break up. Maybe I'll approach the problem as a digraph problem, create a topological ordering, and then travel down the top-level coaching relationships until I find enough users. Or maybe I'll count the number of users under each coach and choose the single coach (along with descendents) who gets closest to the infection amount goal.
 
+Also, I'm assuming 10 million users (somewhere on the internet it said that Khan Academy gets that many unique visitors each month). If the actual number is much larger, then my program might struggle to run in the memory of a single machine. In that case, I should possibly look at distributed algorithms for graph processing. In the past, I've read a little bit about processing graphs with hadoop. Something to look into.
+
 Time to explore for a while...
