@@ -12,4 +12,17 @@ Time to explore for a while...
 
 I just tried out the connected component algorithm on a file of 10 million users and the recursion limit for depth first search was reached. 
 
-The change to breadth-first search seems to work much better. I was able to find an algorithm to search for a combination of connected components that adds up as close to a certain number as possible.  
+The change to breadth-first search seems to work much better. I was able to find an algorithm to search for a combination of connected components that adds up as close to a certain number as possible. Now I need to figure out how to split large components if necessary.
+
+I just found a bug in the limited infection when it is run multiple times in a row. It generates a larger and larger group of users to process. The group contains duplicates which doesn't affect the final result, but causes extra processing. I'm almost done with my 12 hours, so I'll have to leave the bug in for now.
+
+## Final Thoughts
+
+Things to still address:
+
+* The ability to break up large components into smaller ones if desired for partial infections
+* The ability to process a graph that's too big to fit in memory
+* More tests for the graph data structures and the infection functions
+* More docstrings!
+
+I'm also interested in a different way of approaching this problem by creating descendant counts for each coach and then being able to choose the infection population based on a coach's descendants. This will lead to problems when one student is coached by two different coaches, but it would lead to a more natural splitting of large components.
