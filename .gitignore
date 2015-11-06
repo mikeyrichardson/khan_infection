@@ -1,5 +1,6 @@
 test_files*
 draft*
+*.doc*
 *.pyc
 tmp
 .ipynb_checkpoints
