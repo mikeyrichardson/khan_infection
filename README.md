@@ -1,5 +1,7 @@
 # Infection Algorithm
 
+## Initial thoughts
+
 Since the infection travels along both the "is coached by" and the "coaches" relationship, the total infection problem boils down to a determination of the connected components of an undirected graph where the nodes are the users and the edges are the coaching relations.
 
 After writing the code to extract the connected components, I will use the counts of nodes in each of the connected components to implement the limited infection problem by finding a subset of the counts that adds up to approximately the desired number of infections. Depending on how close I would like to get to the target number, it could take a while for the subset selection.
@@ -9,6 +11,8 @@ Also, I need to figure out how I will partition the connected components if it t
 Also, I'm assuming 10 million users (somewhere on the internet it said that Khan Academy gets that many unique visitors each month). If the actual number is much larger, then my program might struggle to run in the memory of a single machine. In that case, I should possibly look at distributed algorithms for graph processing. In the past, I've read a little bit about processing graphs with hadoop. Something to look into.
 
 Time to explore for a while...
+
+## During the Process Thoughts
 
 I just tried out the connected component algorithm on a file of 10 million users and the recursion limit for depth first search was reached. 
 
