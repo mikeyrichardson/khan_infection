@@ -1,5 +1,14 @@
-# Infection Algorithm
+# Instructions
 
+For this task, I assumed the user data would be stored in a tab separated file with three fields: userid, website_version, and list_of_people_you_coach. To run the total_infection and limited_infection functions, just import infection and call the functions like so:
+
+```
+import infection
+num_affected_users = infection.total_infection('database.txt', 'userid01', '1.17')
+num_affected_users = infection.limited_infection('database.txt', '1.17', percentage=0.05)
+```
+
+# Thoughts
 ## Initial thoughts
 
 Since the infection travels along both the "is coached by" and the "coaches" relationship, the total infection problem boils down to a determination of the connected components of an undirected graph where the nodes are the users and the edges are the coaching relations.
