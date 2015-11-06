@@ -1,4 +1,5 @@
-drafts*
+test_files*
+draft*
 *.pyc
 tmp
 .ipynb_checkpoints
