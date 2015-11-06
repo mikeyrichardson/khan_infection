@@ -1,5 +1,8 @@
+from collections import deque
+
+
 class SymbolGraph(object):
-    def __init__(self, file_path = None):
+    def __init__(self, file_path=None):
         self.num_nodes = 0
         self.num_edges = 0
         self.symbol_dict = {}
@@ -54,24 +57,41 @@ class ConnectedComponents(object):
             if self.visited[node]:
                 continue
             else:
-                self.dfs(node)
+                self.bfs(node)
                 self.cc_counts.append(self.current_cc_count)
                 self.current_cc_id += 1
                 self.current_cc_count = 0
                 self.cc_id_membership_list.append([])
 
-    def dfs(self, node):
+    # def dfs(self, node):
+    #     if self.visited[node]:
+    #         return
+    #     self.visited[node] = True
+    #     self.cc_id[node] = self.current_cc_id
+    #     self.cc_id_membership_list[self.current_cc_id].append(node)
+    #     self.current_cc_count += 1
+    #     for neighbor in self.graph.adj_lists[node]:
+    #         self.dfs(neighbor)
+
+    def bfs(self, node):
         if self.visited[node]:
             return
-        self.visited[node] = True
-        self.cc_id[node] = self.current_cc_id
-        self.cc_id_membership_list[self.current_cc_id].append(node)
-        self.current_cc_count += 1
-        for neighbor in self.graph.adj_lists[node]:
-            self.dfs(neighbor)
+        queue = deque()
+        queue.append(node)
+        while queue:
+            node = queue.popleft()
+            if self.visited[node]:
+                continue
+            self.visited[node] = True
+            self.cc_id[node] = self.current_cc_id
+            self.cc_id_membership_list[self.current_cc_id].append(node)
+            self.current_cc_count += 1
+            for neighbor_node in self.graph.adj_lists[node]:
+                if not self.visited[neighbor_node]:
+                    queue.append(neighbor_node)
 
     def get_cc_id(self, node_name):
-        return self.cc_id[symbol_dict[node_name]]
+        return self.cc_id[self.graph.symbol_dict[node_name]]
 
     def get_num_ccs(self):
         return self.current_cc_id
@@ -80,7 +100,7 @@ class ConnectedComponents(object):
         return self.cc_counts[:]
 
     def get_count_for_cc_containing_node(self, node_name):
-        return self.cc_counts[self.cc_id[self.symbol_dict[node_name]]]
+        return self.cc_counts[self.cc_id[self.graph.symbol_dict[node_name]]]
 
     def get_count_for_cc_id(self, id):
         return self.cc_counts[id]
@@ -88,8 +108,6 @@ class ConnectedComponents(object):
     def get_list_of_nodes_with_cc_id(self, id):
         node_names = []
         for node in self.cc_id_membership_list[id]:
-            node_names.append(self.inverse_symbol_dict[node])
+            node_names.append(self.graph.inverse_symbol_dict[node])
         return node_names
-
-
 
