@@ -10,6 +10,8 @@ num_affected_users = infection.limited_infection('database.txt', '1.17', percent
 
 These functions both modify the file with the updated version for the affected users and then return the number of affected users.
 
+The `graph.py` file contains the graph data structures used by `infection.py` and `test_infection.py` contains a few tests for `infection.py`.
+
 # Thoughts
 ## Initial thoughts
 
