@@ -8,6 +8,8 @@ num_affected_users = infection.total_infection('database.txt', 'userid01', '1.17
 num_affected_users = infection.limited_infection('database.txt', '1.17', percentage=0.05)
 ```
 
+These functions both modify the file with the updated version for the affected users and then return the number of affected users.
+
 # Thoughts
 ## Initial thoughts
 
