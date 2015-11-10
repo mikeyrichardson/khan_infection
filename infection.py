@@ -133,7 +133,7 @@ def _find_indices_of_subset_with_sum(nums, target_sum, tolerance=0.0):
 
 
 def _find_sum_in_bounds(nums, lower, upper, index=0,
-                                    current_sum=0, subset_indices=[]):
+                                    current_sum=0, subset_indices=None):
     """Recursively find a subset that sums to a value between lower and upper.
 
     Args:
@@ -148,6 +148,8 @@ def _find_sum_in_bounds(nums, lower, upper, index=0,
         int: A sum between lower and higher (or None if no such sum is possible).
         list: A list of the indices of nums that were used to obtain the sum.
     """
+    if subset_indices is None:
+        subset_indices = []
     if current_sum == 0 and current_sum >= lower:
         return 0, []
     if current_sum > upper:
