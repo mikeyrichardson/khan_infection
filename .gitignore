@@ -3,6 +3,7 @@ draft*
 *.doc*
 *.pyc
 tmp
+*.ipynb
 .ipynb_checkpoints
 */.DS_Store
 .DS_Store
