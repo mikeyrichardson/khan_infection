@@ -6,7 +6,7 @@ from infection import limited_infection
 
 def generate_test_file(dir, file_name=None, num_users=10000, version='1.1',
                         user_to_coach_ratio=None, school_size=None,
-                        uncoached_to_coached_ratio=1, **kwargs):
+                        uncoached_to_coached_ratio=1):
 
     ids = ['id{:013d}'.format(i) for i in xrange(num_users)]
     test_file_dir = dir
@@ -60,13 +60,13 @@ class InfectionTestCase(unittest.TestCase):
             'num_users': 10000,
             'user_to_coach_ratio': 100,
             'school_size': None,
-            'uncoached_to_coached_ratio': 2,
-            'expected_test_total_infection': 51,
-            'expected_test_limited_infection_percentage_10': 1000,
-            'expected_test_limited_infection_amount_2019_tolerance_1_percent': 2019
+            'uncoached_to_coached_ratio': 2
         }
-        cls.test_file_configs.append(test_file_config)
         generate_test_file(cls.test_dir, **test_file_config)
+        test_file_config['expected_test_total_infection'] = 51
+        test_file_config['expected_test_limited_infection_percentage_10'] = 1000
+        test_file_config['expected_test_limited_infection_amount_2019_tolerance_1_percent'] = 2019
+        cls.test_file_configs.append(test_file_config)
 
         # Create a graph file with containing no edges
 
@@ -76,13 +76,13 @@ class InfectionTestCase(unittest.TestCase):
             'num_users': 10000,
             'user_to_coach_ratio': None,
             'school_size': None,
-            'uncoached_to_coached_ratio': None,
-            'expected_test_total_infection': 1,
-            'expected_test_limited_infection_percentage_10': 1000,
-            'expected_test_limited_infection_amount_2019_tolerance_1_percent': 2019
+            'uncoached_to_coached_ratio': None
         }
-        cls.test_file_configs.append(test_file_config)
         generate_test_file(cls.test_dir, **test_file_config)
+        test_file_config['expected_test_total_infection'] = 1
+        test_file_config['expected_test_limited_infection_percentage_10'] = 1000
+        test_file_config['expected_test_limited_infection_amount_2019_tolerance_1_percent'] = 2019
+        cls.test_file_configs.append(test_file_config)
 
         # Create a graph file consisting of a single connected component
 
@@ -92,13 +92,13 @@ class InfectionTestCase(unittest.TestCase):
             'num_users': 10000,
             'user_to_coach_ratio': 100,
             'school_size': 10000,
-            'uncoached_to_coached_ratio': 2,
-            'expected_test_total_infection': 10000,
-            'expected_test_limited_infection_percentage_10': 0,
-            'expected_test_limited_infection_amount_2019_tolerance_1_percent': 0
+            'uncoached_to_coached_ratio': 2
         }
-        cls.test_file_configs.append(test_file_config)
         generate_test_file(cls.test_dir, **test_file_config)
+        test_file_config['expected_test_total_infection'] = 10000
+        test_file_config['expected_test_limited_infection_percentage_10'] = 0
+        test_file_config['expected_test_limited_infection_amount_2019_tolerance_1_percent'] = 0
+        cls.test_file_configs.append(test_file_config)
 
         # Create a graph where edges occur only within groups of 2000 users
 
@@ -108,14 +108,13 @@ class InfectionTestCase(unittest.TestCase):
             'num_users': 10000,
             'user_to_coach_ratio': 100,
             'school_size': 2000,
-            'uncoached_to_coached_ratio': 20,
-            'expected_test_total_infection': 101,
-            'expected_test_limited_infection_percentage_10': 0,
-            'expected_test_limited_infection_amount_2019_tolerance_1_percent': 2000
+            'uncoached_to_coached_ratio': 20
         }
-
-        cls.test_file_configs.append(test_file_config)
         generate_test_file(cls.test_dir, **test_file_config)
+        test_file_config['expected_test_total_infection'] = 101
+        test_file_config['expected_test_limited_infection_percentage_10'] = 0
+        test_file_config['expected_test_limited_infection_amount_2019_tolerance_1_percent'] = 2000
+        cls.test_file_configs.append(test_file_config)
 
 
     @classmethod
@@ -132,19 +131,19 @@ class InfectionTestCase(unittest.TestCase):
             expected = config['expected_test_total_infection']
             self.assertEqual(affected_users, expected)
 
-    def test_limited_infection_percentage_10(self):
+    def test_limited_infection_percentage_10__tolerance_0_percent(self):
         for config in self.test_file_configs:
             file_name = os.path.join(self.test_dir, config['file_name'])
-            affected_users = limited_infection(file_name, '1.34', percentage=0.1, 
-                                             amount=None, tolerance=0, userid=None)
+            affected_users = limited_infection(file_name, '1.34', infection_percentage=0.1, 
+                                               tolerance=0, userid=None)
             expected = config['expected_test_limited_infection_percentage_10']
             self.assertEqual(affected_users, expected)
 
-    def test_limited_infection_amount_2019_tolerance_1_percent(self):
+    def test_limited_infection_percentage_20_19__tolerance_1_percent(self):
         for config in self.test_file_configs:
             file_name = os.path.join(self.test_dir, config['file_name'])
-            affected_users = limited_infection(file_name, '1.34', percentage=None, 
-                                             amount=2019, tolerance=0.01, userid=None)
+            affected_users = limited_infection(file_name, '1.34', infection_percentage=0.2019, 
+                                               tolerance=0.01, userid=None)
             expected = config['expected_test_limited_infection_amount_2019_tolerance_1_percent']
             self.assertEqual(affected_users, expected)
 
