@@ -18,7 +18,6 @@ def total_infection(file_name, userid, version):
         version (str): The website version that users will be updated to.
         userid (str): All users related to this userid through coaching
             relationships will be updated to the same website version.
-        datastore: The location of the datastore.
     """
     userid_adj_list_pairs = _extract_userids_and_adj_lists(file_name)
     gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
@@ -46,8 +45,8 @@ def limited_infection(file_name, version, infection_percentage=0.1,
     Returns:
         The number of records updated.
     """
-    users = _extract_userids_and_adj_lists(file_name)
-    gr = graph.SymbolGraph(inpt=users)
+    userid_adj_list_pairs = _extract_userids_and_adj_lists(file_name)
+    gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
     cc = graph.ConnectedComponents(gr)
     cc_counts = cc.get_cc_counts()
     desired_infections = int(gr.num_nodes * infection_percentage)
@@ -66,7 +65,7 @@ def limited_infection(file_name, version, infection_percentage=0.1,
 
     if infected_cc_ids is None:
         print ("Couldn't divide the connected components with desired " +
-               "percentage infected: {:.1f}%, tolerance: {:.1f}%, and userid: {}"
+               "infection percentage: {:.2f}%, tolerance: {:.2f}%, and userid: {}"
               ).format(infection_percentage * 100, tolerance * 100, userid)
         return 0
 
@@ -81,7 +80,7 @@ def limited_infection(file_name, version, infection_percentage=0.1,
     return _update_version_for_users(file_name, users_to_update, version)
 
 
-def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.0):
+def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
     """Find the indices of the set of numbers that add up to the
     given sum within the specified tolerance.
 
@@ -223,7 +222,7 @@ def convert_to_list_of_indices(num):
 def _extract_userids_and_adj_lists(file_name):
     in_file = open(file_name)
     for line in in_file:
-        fields = line[:-1].split('\t')
+        fields = line.strip().split('\t')
         userid = fields[0]
         if len(fields) == 2:
             yield (userid, None)
