@@ -2,20 +2,20 @@ from collections import deque
 
 
 class SymbolGraph(object):
-    def __init__(self, inpt=None):
+    def __init__(self, iterable_input=None):
         """
         Args:
-            inpt (iterator): An interable of strings. Each string should contain
-                a tab-separated node id and adjacency list. The adjacency list
-                should be comma-separated. Default of None creates an empty graph.
+            iterable_input: An interable of tuples. Each tuple should contain
+                a node id and an adjacency list (list). Default of None creates
+                an empty graph.
         """ 
         self.num_nodes = 0
         self.num_edges = 0
         self.symbol_dict = {}
         self.inverse_symbol_dict = []
         self.adj_lists = []
-        if inpt:
-            self.read_graph_from_input(inpt)
+        if iterable_input:
+            self.read_graph_from_input(iterable_input)
 
     def add_node(self, node_name):
         if node_name in self.symbol_dict:
@@ -37,12 +37,11 @@ class SymbolGraph(object):
             self.adj_lists[dest_node].append(src_node)
         self.num_edges += 1
 
-    def read_graph_from_input(self, input):
-        for line in input:
-            node_name, neighbor_list = line[:-1].split('\t')
+    def read_graph_from_input(self, iterable_input):
+        for userid_adj_list_pair in iterable_input:
+            node_name, neighbor_list = userid_adj_list_pair
             if neighbor_list:
-                neighbor_names = neighbor_list.split(',')
-                for neighbor_name in neighbor_names:
+                for neighbor_name in neighbor_list:
                     self.add_edge(node_name, neighbor_name)
             else:
                 self.add_node(node_name)
