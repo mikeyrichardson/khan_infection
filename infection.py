@@ -20,30 +20,28 @@ def total_infection(file_name, userid, version):
             relationships will be updated to the same website version.
         datastore: The location of the datastore.
     """
-    users = _extract_userids_and_adj_lists(file_name)
-    gr = graph.SymbolGraph(inpt=users)
+    userid_adj_list_pairs = _extract_userids_and_adj_lists(file_name)
+    gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
     cc = graph.ConnectedComponents(gr)
     user_cc_id = cc.get_cc_id(userid)
     cc_members = cc.get_nodes_with_cc_id(user_cc_id)
     return _update_version_for_users(file_name, cc_members, version)
 
 
-def limited_infection(file_name, version, percentage=0.1, amount=None,
-                      tolerance=0.01, userid=None):
+def limited_infection(file_name, version, infection_percentage=0.1,
+                      tolerance=0.05, userid=None):
     """Change the website version of a specified amount of active users.
 
     Args:
-        version (str): The website version that selected users will be updated to.
-        userid (str): The userid of a user that should be selected.
-        percentage (float): The percentage of active users that should be selected.
-            Does nothing if amount is specified.
-        amount (int): The amount of users that should be selected.
+        file_name (str): The path of the file containing the data.
+        version (str): The website version that infected users will be updated to.
+        infection_percentage (float): The percentage of active users that should be infected.
         tolerance (float or int): Either a percentage (float) or absolute (int).
             The allowable discrepancy between the specified
             number of users to be infected and the actual amount. This allows the
             flexibility needed to ensure that coaches and students use the
             same version of the site.
-        datastore: The location of the datastore.
+        userid (str): The userid of a user that should be infected.
 
     Returns:
         The number of records updated.
@@ -52,75 +50,73 @@ def limited_infection(file_name, version, percentage=0.1, amount=None,
     gr = graph.SymbolGraph(inpt=users)
     cc = graph.ConnectedComponents(gr)
     cc_counts = cc.get_cc_counts()
-    if amount:
-        desired_amount_infected_users = amount
-    else:
-        desired_amount_infected_users = int(gr.num_nodes * percentage)
+    desired_infections = int(gr.num_nodes * infection_percentage)
 
+  
     # If a specific user is desired in the resulting set, remove that
     # user's connected component and find the remaining sum.
     if userid:
         user_cc_id = cc.get_cc_id(userid)
         user_cc_count = cc.get_count_for_cc_id(user_cc_id)
         cc_counts = cc_counts[:user_cc_id] + cc_counts[user_cc_id + 1:]
-        desired_amount_infected_users -= user_cc_count
+        desired_infections -= user_cc_count
 
-    amount_of_users_in_subset, cc_ids = \
-        _find_indices_of_subset_with_sum(cc_counts, desired_amount_infected_users,
-                                        tolerance=tolerance)
+    infected_cc_ids = _find_indices_of_subset(cc_counts, desired_infections,
+                                              tolerance=tolerance)
 
-    if amount_of_users_in_subset is None:
-        print ("Couldn't divide the connected components with desired amount infected: {}, " +
-              "tolerance: {:.1f}%, and userid: {}").format(desired_amount_infected_users,
-                                                           tolerance * 100, userid)
+    if infected_cc_ids is None:
+        print ("Couldn't divide the connected components with desired " +
+               "percentage infected: {:.1f}%, tolerance: {:.1f}%, and userid: {}"
+              ).format(infection_percentage * 100, tolerance * 100, userid)
         return 0
 
-    # Add the specified user's cc_id into the list of cc_ids
+    # Add the specified user's cc_id into the list of infected_cc_ids
     if userid:
-        amount_of_users_in_subset += user_cc_count
-        cc_ids = [cc_id if cc_id < user_cc_id else cc_id + 1 for cd_id in cc_ids]
+        infected_cc_ids = [cc_id if cc_id < user_cc_id 
+                                 else cc_id + 1 for cd_id in infected_cc_ids]
 
     users_to_update = []
-    for cc_id in cc_ids:
+    for cc_id in infected_cc_ids:
         users_to_update.extend(cc.get_nodes_with_cc_id(cc_id))
     return _update_version_for_users(file_name, users_to_update, version)
 
 
-def _find_indices_of_subset_with_sum(nums, target_sum, tolerance=0.0):
+def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.0):
     """Find the indices of the set of numbers that add up to the
     given sum within the specified tolerance.
 
     Args:
-        nums (list): list of numbers
+        set_of_ints (list): list of non-negative integers
         sum (int): target sum
-        tolerance (Optional[float,int]): acceptable error for target sum,
-            either a percentage (float) or absolute (int)
+        tolerance (float): acceptable error for target sum, as a
+                           decimal percentage
     """
-    if type(tolerance) == float:
-        tolerance = int(tolerance * target_sum)
+    allowable_error = int(tolerance * target_sum)
 
     # sort the counts and remember the original order
-    sorted_nums = sorted(nums, reverse=True)
-    original_indices = sorted(range(len(nums)), key=lambda i: nums[i],
+    sorted_set_of_ints = sorted(set_of_ints, reverse=True)
+    original_indices = sorted(range(len(set_of_ints)), key=lambda i: set_of_ints[i],
                               reverse=True)
     # There are likely to be a lot of connected components
     # with only one member. Remove the ones temporarily to
-    # avoid excessive recursion.
+    # avoid excessive recursion in the _find_subset function.
     try:
-        index_of_first_one = sorted_nums.index(1)
+        index_of_first_one = sorted_set_of_ints.index(1)
     except ValueError:
-        index_of_first_one = len(sorted_nums)
-    num_ones = len(sorted_nums) - index_of_first_one
+        index_of_first_one = len(sorted_set_of_ints)
+    num_ones = len(sorted_set_of_ints) - index_of_first_one
 
     # See if the desired sum is possible
-    lowest_acceptable_sum = target_sum - tolerance - num_ones
-    highest_acceptable_sum = target_sum + tolerance
-    nums_without_the_ones = sorted_nums[:index_of_first_one]
-    result_sum, subset_indices = \
-        _find_sum_in_bounds(nums_without_the_ones,
-                            lowest_acceptable_sum, highest_acceptable_sum)
-    if result_sum is  None:
-        return None, []
+    lowest_acceptable_sum = target_sum - allowable_error - num_ones
+    highest_acceptable_sum = target_sum + allowable_error
+    set_of_ints_with_ones_removed = sorted_set_of_ints[:index_of_first_one]
+    subset_indices = _find_subset(set_of_ints_with_ones_removed,
+                                  lowest_acceptable_sum, 
+                                  highest_acceptable_sum)
+    if subset_indices is None:
+        return None
+
+    result_sum = sum(set_of_ints[i] for i in subset_indices)
 
     # Add back in the removed ones
     num_ones_needed = int(max(0, target_sum - result_sum))
@@ -128,44 +124,98 @@ def _find_indices_of_subset_with_sum(nums, target_sum, tolerance=0.0):
     subset_indices = subset_indices + range(index_of_first_one,
                                             index_of_first_one + num_ones_used)
 
-    return result_sum + num_ones_used, \
-        [original_indices[i] for i in subset_indices]
+    # Convert the indices back to the pre-sort indices
+    orig_subset_indices = [original_indices[i] for i in subset_indices]
+    return orig_subset_indices
+        
 
-
-def _find_sum_in_bounds(nums, lower, upper, index=0,
-                                    current_sum=0, subset_indices=None):
-    """Recursively find a subset that sums to a value between lower and upper.
+def _find_subset(set_of_ints, lower, upper):
+    """ Iteratively find the indices of a subset that has a sum between lower and upper.
 
     Args:
-        nums (list): The numbers that can be used in the subset.
+        set_of_ints (list): The numbers that can be used in the subset.
         lower (int): The lowest acceptable sum for the subset.
         upper (int): The highest acceptable sum for the subset.
-        index (int): The index in nums that should next be added to the sum.
-        current_sum (int): The sum of the current subset.
-        subset_indices (list): The indices of the current subset.
 
     Returns:
-        int: A sum between lower and higher (or None if no such sum is possible).
-        list: A list of the indices of nums that were used to obtain the sum.
+        list: A list of the indices of set_of_ints that were used to obtain the sum.
     """
-    if subset_indices is None:
-        subset_indices = []
-    if current_sum == 0 and current_sum >= lower:
-        return 0, []
-    if current_sum > upper:
-        return None, []
-    for i in xrange(index, len(nums)):
-        next_sum = current_sum + nums[i]
-        if next_sum >= lower and next_sum <= upper:
-            subset_indices.append(i)
-            return next_sum, subset_indices
-        elif next_sum < lower:
-            found_sum, indices = \
-                _find_sum_in_bounds(nums, lower, upper, index + 1,
-                                    next_sum, subset_indices[:] + [i])
-            if found_sum:
-                return found_sum, indices
-        return None, []
+    if upper < 0:
+        return None
+    if lower <=0 and 0 <= upper:
+        return []
+    reverse_sorted_set_of_ints = sorted(set_of_ints, reverse=True)
+    original_indices = sorted(range(len(set_of_ints)), 
+                              key=lambda i: set_of_ints[i],
+                              reverse=True)
+    current_sum = 0
+    current_indices_int = 0
+    i = 0
+    reset_points = []
+    most_recent_zero_location = -1
+    while True:
+        if i == len(reverse_sorted_set_of_ints):
+            if len(reset_points) == 0:
+                return None
+            i, current_indices_int, current_sum = reset_points.pop()
+            current_indices_int -= 2 ** i
+            current_sum -= reverse_sorted_set_of_ints[i]
+            i += 1
+        current_sum += reverse_sorted_set_of_ints[i]
+        if lower <= current_sum and current_sum <= upper:
+            current_indices_int += 2 ** i
+            found_indices = convert_to_list_of_indices(current_indices_int)
+            orig_subset_indices = [original_indices[i] for i in found_indices]
+            return orig_subset_indices
+        elif current_sum > upper:
+            if i > 0 and i > most_recent_zero_location + 1:
+                reset_points.append((i - 1, current_indices_int, current_sum))
+            most_recent_zero_location = i
+            current_sum -= reverse_sorted_set_of_ints[i]
+        else:
+            current_indices_int += 2 ** i
+        i += 1
+
+def convert_to_list_of_indices(num):
+    indices = []
+    i = 0
+    while num > 0:
+        if num % 2 == 1:
+            indices.append(i)
+        num = num // 2
+        i += 1
+    return indices
+
+
+# # This recursive version would surpass the recursion depth limit too often
+# def _find_subset(set_of_ints, lower, upper, index=0, subset_indices=None):
+#     """Recursively find a subset that sums to a value between lower and upper.
+
+#     Args:
+#         set_of_ints (list): The numbers that can be used in the subset.
+#         lower (int): The lowest acceptable sum for the subset.
+#         upper (int): The highest acceptable sum for the subset.
+#         index (int): The index in set_of_ints that should next be added to the subset.
+#         subset_indices (list): The indices of the current subset.
+
+#     Returns:
+#         list: A list of the indices of set_of_ints that were used to obtain the sum.
+#     """
+#     if subset_indices is None:
+#         subset_indices = []
+#     if upper < 0:
+#         return None
+#     if lower <= 0 and 0 <= upper:
+#         return subset_indices
+#     for i in xrange(index, len(set_of_ints)):
+#         found_indices = _find_subset(set_of_ints, 
+#                                      lower - set_of_ints[i], 
+#                                      upper - set_of_ints[i],
+#                                      index + 1, 
+#                                      subset_indices + [i])
+#         if found_indices is not None:
+#             return found_indices
+#     return None
 
 
 # This would be a function to extract the info from
@@ -174,10 +224,12 @@ def _extract_userids_and_adj_lists(file_name):
     in_file = open(file_name)
     for line in in_file:
         fields = line[:-1].split('\t')
+        userid = fields[0]
         if len(fields) == 2:
-            yield fields[0] + '\t\n'
+            yield (userid, None)
         else:
-            yield fields[0] + '\t' + fields[2] + '\n'
+            adj_list = fields[2].split(',')
+            yield (userid, adj_list)
     in_file.close()
 
 
