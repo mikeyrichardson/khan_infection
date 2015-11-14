@@ -18,13 +18,16 @@ def total_infection(file_name, userid, version):
         version (str): The website version that users will be updated to.
         userid (str): All users related to this userid through coaching
             relationships will be updated to the same website version.
+
+    Returns:
+        A list of user ids for all the infected users.
     """
-    userid_adj_list_pairs = _extract_userids_and_adj_lists(file_name)
+    userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
     gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
     cc = graph.ConnectedComponents(gr)
     user_cc_id = cc.get_cc_id(userid)
     cc_members = cc.get_nodes_with_cc_id(user_cc_id)
-    return _update_version_for_users(file_name, cc_members, version)
+    return cc_members
 
 
 def limited_infection(file_name, version, infection_percentage=0.1,
@@ -43,14 +46,13 @@ def limited_infection(file_name, version, infection_percentage=0.1,
         userid (str): The userid of a user that should be infected.
 
     Returns:
-        The number of records updated.
+        A list of user ids for all the infected users.
     """
-    userid_adj_list_pairs = _extract_userids_and_adj_lists(file_name)
+    userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
     gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
     cc = graph.ConnectedComponents(gr)
     cc_counts = cc.get_cc_counts()
     desired_infections = int(gr.num_nodes * infection_percentage)
-
   
     # If a specific user is desired in the resulting set, remove that
     # user's connected component and find the remaining sum.
@@ -73,7 +75,6 @@ def limited_infection(file_name, version, infection_percentage=0.1,
     if userid:
         infected_cc_ids = [cc_id if cc_id < user_cc_id 
                                  else cc_id + 1 for cd_id in infected_cc_ids]
-
     users_to_update = []
     for cc_id in infected_cc_ids:
         users_to_update.extend(cc.get_nodes_with_cc_id(cc_id))
@@ -89,6 +90,10 @@ def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
         sum (int): target sum
         tolerance (float): acceptable error for target sum, as a
                            decimal percentage
+
+    Returns:
+        list: A list of the indices of the subset which sums to 
+            target_sum (within the specified tolerance).
     """
     allowable_error = int(tolerance * target_sum)
 
@@ -96,6 +101,7 @@ def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
     sorted_set_of_ints = sorted(set_of_ints, reverse=True)
     original_indices = sorted(range(len(set_of_ints)), key=lambda i: set_of_ints[i],
                               reverse=True)
+
     # There are likely to be a lot of connected components
     # with only one member. Remove the ones temporarily to
     # avoid excessive recursion in the _find_subset function.
@@ -137,7 +143,8 @@ def _find_subset(set_of_ints, lower, upper):
         upper (int): The highest acceptable sum for the subset.
 
     Returns:
-        list: A list of the indices of set_of_ints that were used to obtain the sum.
+        list: A list of the indices of the subset of set_of_ints 
+            that were used to obtain the sum.
     """
     if upper < 0:
         return None
@@ -176,6 +183,16 @@ def _find_subset(set_of_ints, lower, upper):
         i += 1
 
 def convert_to_list_of_indices(num):
+    """ Convert an int to a list of indices corresponding to the positions
+        of the 1s in its binary representation (least signicant bit at position 0).
+
+    Args:
+        num (int): A positive integer.
+
+    Returns:
+        list: A list of indices corresponding to the positions of the 1s in
+            the binary representation of `num`.
+    """
     indices = []
     i = 0
     while num > 0:
@@ -219,7 +236,12 @@ def convert_to_list_of_indices(num):
 
 # This would be a function to extract the info from
 # a database
-def _extract_userids_and_adj_lists(file_name):
+def extract_userids_and_adj_lists(file_name):
+    """Open the database file and return an iterator of userid, adj_list tuples.
+
+    Args:
+        file_name (str): The path of the file containing the data.
+    """
     in_file = open(file_name)
     for line in in_file:
         fields = line.strip().split('\t')
@@ -233,10 +255,18 @@ def _extract_userids_and_adj_lists(file_name):
 
 
 # This would be a function to update the database
-def _update_version_for_users(in_file_name, affected_users, version):
+def update_version_for_users(in_file_name, affected_users, version):
     """
-    Connect to database and update the version of each record
-    corresponding to the ids in users.
+    Open the database file and update the version of each record
+    corresponding to the ids in affected_users.
+
+    Args:
+        in_file_name (str): Path of the file containing the data.
+        affected_users (list): List of user ids of records that will be updated.
+        version (str): Version that affected users will be updated to.
+
+    Returns:
+        int: The number of updated records.
     """
     out_file_name = 'tmp{}'.format(random.randint(10000000,99999999))
     out_file = open(out_file_name, 'w')
