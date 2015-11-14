@@ -75,10 +75,10 @@ def limited_infection(file_name, version, infection_percentage=0.1,
     if userid:
         infected_cc_ids = [cc_id if cc_id < user_cc_id 
                                  else cc_id + 1 for cd_id in infected_cc_ids]
-    users_to_update = []
+    affected_users = []
     for cc_id in infected_cc_ids:
-        users_to_update.extend(cc.get_nodes_with_cc_id(cc_id))
-    return _update_version_for_users(file_name, users_to_update, version)
+        affected_users.extend(cc.get_nodes_with_cc_id(cc_id))
+    return affected_users
 
 
 def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
@@ -201,37 +201,6 @@ def convert_to_list_of_indices(num):
         num = num // 2
         i += 1
     return indices
-
-
-# # This recursive version would surpass the recursion depth limit too often
-# def _find_subset(set_of_ints, lower, upper, index=0, subset_indices=None):
-#     """Recursively find a subset that sums to a value between lower and upper.
-
-#     Args:
-#         set_of_ints (list): The numbers that can be used in the subset.
-#         lower (int): The lowest acceptable sum for the subset.
-#         upper (int): The highest acceptable sum for the subset.
-#         index (int): The index in set_of_ints that should next be added to the subset.
-#         subset_indices (list): The indices of the current subset.
-
-#     Returns:
-#         list: A list of the indices of set_of_ints that were used to obtain the sum.
-#     """
-#     if subset_indices is None:
-#         subset_indices = []
-#     if upper < 0:
-#         return None
-#     if lower <= 0 and 0 <= upper:
-#         return subset_indices
-#     for i in xrange(index, len(set_of_ints)):
-#         found_indices = _find_subset(set_of_ints, 
-#                                      lower - set_of_ints[i], 
-#                                      upper - set_of_ints[i],
-#                                      index + 1, 
-#                                      subset_indices + [i])
-#         if found_indices is not None:
-#             return found_indices
-#     return None
 
 
 # This would be a function to extract the info from
