@@ -150,36 +150,34 @@ def _find_subset(set_of_ints, lower, upper):
         return None
     if lower <=0 and 0 <= upper:
         return []
-    reverse_sorted_set_of_ints = sorted(set_of_ints, reverse=True)
+    nums = sorted(set_of_ints, reverse=True)
     original_indices = sorted(range(len(set_of_ints)), 
                               key=lambda i: set_of_ints[i],
                               reverse=True)
-    current_sum = 0
-    current_indices_int = 0
     i = 0
+    current_sum = 0
+    current_indices = []
     reset_points = []
-    most_recent_zero_location = -1
     while True:
-        if i == len(reverse_sorted_set_of_ints):
+        if i == len(nums):
             if len(reset_points) == 0:
                 return None
-            i, current_indices_int, current_sum = reset_points.pop()
-            current_indices_int -= 2 ** i
-            current_sum -= reverse_sorted_set_of_ints[i]
+            current_indices, current_sum = reset_points.pop()
+            # remove last index and try without it
+            i = current_indices.pop()
+            current_sum -= nums[i]
             i += 1
-        current_sum += reverse_sorted_set_of_ints[i]
+        current_sum += nums[i]
         if lower <= current_sum and current_sum <= upper:
-            current_indices_int += 2 ** i
-            found_indices = convert_to_list_of_indices(current_indices_int)
-            orig_subset_indices = [original_indices[i] for i in found_indices]
+            current_indices.append(i)
+            orig_subset_indices = [original_indices[i] for i in current_indices]
             return orig_subset_indices
         elif current_sum > upper:
-            if i > 0 and i > most_recent_zero_location + 1:
-                reset_points.append((i - 1, current_indices_int, current_sum))
-            most_recent_zero_location = i
-            current_sum -= reverse_sorted_set_of_ints[i]
+            current_sum -= nums[i]
+            if i > 0 and current_indices and current_indices[-1] == i - 1:
+                reset_points.append((current_indices[:], current_sum))
         else:
-            current_indices_int += 2 ** i
+            current_indices.append(i)
         i += 1
 
 def convert_to_list_of_indices(num):
