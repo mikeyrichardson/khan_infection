@@ -7,7 +7,7 @@ import os
 # can be extracted.
 
 def total_infection(file_name, userid):
-    """Change the website version of a user along with all related users.
+    """Return a list of all users related to `userid` by coaching relationships.
 
     This function returns a list of users that are related to `userid`.
     A user is considered related if to another user if he/she is a coach of
@@ -35,8 +35,6 @@ def limited_infection(file_name, infection_percentage=0.1,
                       tolerance=0.05, userid=None):
     """Return a list of users of size close to `infection_percentage`
     of the total amount of users.
-
-
 
     Return a list of users such that if a user is in the list, all of the
     related users are also in the list (see 'total_infection'). The size of
