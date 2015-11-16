@@ -6,7 +6,7 @@ import os
 # all active userids, along with coach relationships
 # can be extracted.
 
-def total_infection(file_name, userid, version):
+def total_infection(file_name, userid):
     """Change the website version of a user along with all related users.
 
     This function changes a user's version of the website and also changes
@@ -15,7 +15,6 @@ def total_infection(file_name, userid, version):
 
     Args:
         file_name (str): The name of the file containing the user data.
-        version (str): The website version that users will be updated to.
         userid (str): All users related to this userid through coaching
             relationships will be updated to the same website version.
 
@@ -30,13 +29,12 @@ def total_infection(file_name, userid, version):
     return cc_members
 
 
-def limited_infection(file_name, version, infection_percentage=0.1,
+def limited_infection(file_name, infection_percentage=0.1,
                       tolerance=0.05, userid=None):
     """Change the website version of a specified amount of active users.
 
     Args:
         file_name (str): The path of the file containing the data.
-        version (str): The website version that infected users will be updated to.
         infection_percentage (float): The percentage of active users that should be infected.
         tolerance (float or int): Either a percentage (float) or absolute (int).
             The allowable discrepancy between the specified
