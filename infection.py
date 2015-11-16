@@ -35,7 +35,7 @@ def total_infection(file_name, infected_userid):
 
 
 def limited_infection(file_name, infection_percentage=0.1,
-                      tolerance=0.05, userid=None):
+                      tolerance=0.05, affected_userid=None):
     """Change the website version of a specified amount of active users.
 
     Args:
@@ -64,6 +64,17 @@ def limited_infection(file_name, infection_percentage=0.1,
 
     desired_infections = int(graph.number_of_nodes() * infection_percentage)
 
+    # If a specific user is desired in the resulting set, remove that
+    # user's connected component and find the remaining sum.
+    if affected_userid:
+        for (i, cc) in enumerate(ccs):
+            if affected_userid in cc:
+                affected_user_cc_id = i
+                affected_user_cc_count = cc_counts[i]
+                break
+        cc_counts = cc_counts[:affected_user_cc_id] + cc_counts[affected_user_cc_id + 1:]
+        desired_infections -= affected_user_cc_count
+
     infected_cc_ids = _find_indices_of_subset(cc_counts, desired_infections,
                                               tolerance=tolerance)
 
@@ -72,6 +83,12 @@ def limited_infection(file_name, infection_percentage=0.1,
                "infection percentage: {:.2f}%, tolerance: {:.2f}%, and userid: {}"
               ).format(infection_percentage * 100, tolerance * 100, userid)
         return []
+
+    # Add the specified user's cc_id into the list of infected_cc_ids
+    if affected_userid:
+        infected_cc_ids = [cc_id if cc_id < affected_user_cc_id 
+                                 else cc_id + 1 for cc_id in infected_cc_ids]
+        infected_cc_ids.append(affected_user_cc_id)
 
     affected_users = []
     for cc_id in infected_cc_ids:
