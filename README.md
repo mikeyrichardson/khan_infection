@@ -4,13 +4,18 @@ For this task, I assumed the user data would be stored in a tab separated file w
 
 ```
 import infection
-num_affected_users = infection.total_infection('database.txt', 'userid01', '1.17')
-num_affected_users = infection.limited_infection('database.txt', '1.17', percentage=0.05)
+affected_users = infection.total_infection('database.txt', 'userid01')
+infection.update_version_for_users('database.txt', affected_users, '1.2')
+
+# OR
+
+affected_users = infection.limited_infection('database.txt', infection_percentage=0.1, tolerance=0.05)
+infection.update_version_for_users('database.txt', affected_users, '1.2')
 ```
 
 These functions both modify the file with the updated version for the affected users and then return the number of affected users.
 
-The `graph.py` file contains the graph data structures used by `infection.py` and `test_infection.py` contains a few tests for `infection.py`.
+The `test_infection.py` file contains a few tests for `infection.py`. The `infection` module depends on the `networkx` module.
 
 # Thoughts
 ## Initial thoughts
