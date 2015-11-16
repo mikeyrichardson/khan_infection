@@ -236,13 +236,20 @@ def update_version_for_users(in_file_name, affected_users, version):
     out_file_name = 'tmp{}'.format(random.randint(10000000,99999999))
     out_file = open(out_file_name, 'w')
     in_file = open(in_file_name)
+    out_lines = []
     for line in in_file:
         fields = line.split('\t')
         userid = fields[0]
         if userid in affected_users:
-            out_file.write(userid + '\t' + version + '\t' + '\t'.join(fields[2:]))
+            out_lines.append(userid + '\t' + version + '\t' + '\t'.join(fields[2:]))
         else:
-            out_file.write(line)
+            out_lines.append(line)
+        if len(out_lines) > 100000:
+            for line in out_lines:
+                out_file.write(line)
+            out_lines = []
+    for line in out_lines:
+        out_file.write(line)
     in_file.close()
     out_file.close()
     os.remove(in_file_name)
