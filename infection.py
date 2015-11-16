@@ -23,15 +23,29 @@ def total_infection(file_name, infected_userid):
         A list of user ids for all the infected users.
     """
     graph = nx.Graph()
+    symbol_table = {}
+    inverse_symbol_table = []
     userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
     for userid, adj_list in userid_adj_list_pairs:
+        if userid in symbol_table:
+            user_node = symbol_table[userid]
+        else:
+            user_node = len(inverse_symbol_table)
+            symbol_table[userid] = user_node
+            inverse_symbol_table.append(userid)
         if adj_list:
             for neighbor in adj_list:
-                graph.add_edge(userid, neighbor)
+                if neighbor in symbol_table:
+                    neighbor_node = symbol_table[neighbor]
+                else:
+                    neighbor_node = len(inverse_symbol_table)
+                    symbol_table[neighbor] = neighbor_node
+                    inverse_symbol_table.append(neighbor)
+                graph.add_edge(user_node, neighbor_node)
         else:
-            graph.add_node(userid)
-    cc = nx.node_connected_component(graph, infected_userid)
-    return cc
+            graph.add_node(user_node)
+    cc = nx.node_connected_component(graph, symbol_table[infected_userid])
+    return [inverse_symbol_table[node] for node in cc]
 
 
 def limited_infection(file_name, infection_percentage=0.1,
