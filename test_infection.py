@@ -127,7 +127,7 @@ class InfectionTestCase(unittest.TestCase):
     def test_total_infection(self):
         for config in self.test_file_configs:
             file_name = os.path.join(self.test_dir, config['file_name'])
-            affected_users = total_infection(file_name, 'id0000000000001', '1.17')
+            affected_users = total_infection(file_name, 'id0000000000001')
             expected = config['expected_test_total_infection']
             self.assertEqual(len(affected_users), expected)
 
