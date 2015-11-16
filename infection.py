@@ -8,6 +8,7 @@ import networkx as nx
 # can be extracted.
 
 def total_infection(file_name, infected_userid):
+
     """Change the website version of a user along with all related users.
 
     This function changes a user's version of the website and also changes
@@ -40,7 +41,6 @@ def limited_infection(file_name, infection_percentage=0.1,
 
     Args:
         file_name (str): The path of the file containing the data.
-        version (str): The website version that infected users will be updated to.
         infection_percentage (float): The percentage of active users that should be infected.
         tolerance (float or int): Either a percentage (float) or absolute (int).
             The allowable discrepancy between the specified
