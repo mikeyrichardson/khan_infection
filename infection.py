@@ -9,17 +9,19 @@ import os
 def total_infection(file_name, userid):
     """Change the website version of a user along with all related users.
 
-    This function changes a user's version of the website and also changes
-    the version of the user's students and coaches (and their students and coaches,
-    and so on).
+    This function returns a list of users that are related to `userid`.
+    A user is considered related if to another user if he/she is a coach of
+    or is coached by `userid`. A user is also related to `userid` if that
+    user is related to any of the other users who are related to `userid`.
 
     Args:
         file_name (str): The name of the file containing the user data.
         userid (str): All users related to this userid through coaching
-            relationships will be updated to the same website version.
+            relationships will be found and returned in a list.
 
     Returns:
-        A list of user ids for all the infected users.
+        A list of user ids for all the users related to `userid` (including
+            `userid`.
     """
     userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
     gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
@@ -31,17 +33,25 @@ def total_infection(file_name, userid):
 
 def limited_infection(file_name, infection_percentage=0.1,
                       tolerance=0.05, userid=None):
-    """Change the website version of a specified amount of active users.
+    """Return a list of users of size close to `infection_percentage`
+    of the total amount of users.
+
+
+
+    Return a list of users such that if a user is in the list, all of the
+    related users are also in the list (see 'total_infection'). The size of
+    the list is determined by the infection_percentage. The size of the returned
+    list may deviate from the specified percentage by a relative error of `tolerance`.
+    If it is desired to ensure that a certain user is in the returned list, a
+    userid may be specified as an optional parameter.
 
     Args:
         file_name (str): The path of the file containing the data.
         infection_percentage (float): The percentage of active users that should be infected.
-        tolerance (float or int): Either a percentage (float) or absolute (int).
-            The allowable discrepancy between the specified
+        tolerance (float): The relative allowable discrepancy between the specified
             number of users to be infected and the actual amount. This allows the
-            flexibility needed to ensure that coaches and students use the
-            same version of the site.
-        userid (str): The userid of a user that should be infected.
+            flexibility needed to ensure that a suitable list can be found.
+        userid (str): The userid of a user that should be in the returned list.
 
     Returns:
         A list of user ids for all the infected users.
@@ -80,13 +90,13 @@ def limited_infection(file_name, infection_percentage=0.1,
 
 
 def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
-    """Find the indices of the set of numbers that add up to the
-    given sum within the specified tolerance.
+    """Find the indices of the set of ints that add up to the
+    given sum within the specified relative tolerance.
 
     Args:
         set_of_ints (list): list of non-negative integers
         sum (int): target sum
-        tolerance (float): acceptable error for target sum, as a
+        tolerance (float): acceptable relative error for target sum, as a
                            decimal percentage
 
     Returns:
@@ -133,7 +143,7 @@ def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
         
 
 def _find_subset(set_of_ints, lower, upper):
-    """ Iteratively find the indices of a subset that has a sum between lower and upper.
+    """ Iteratively find the indices of a subset that has a sum between lower and upper (inclusive).
 
     Args:
         set_of_ints (list): The numbers that can be used in the subset.
