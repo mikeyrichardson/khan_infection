@@ -67,7 +67,7 @@ def limited_infection(file_name, infection_percentage=0.1,
         print ("Couldn't divide the connected components with desired " +
                "infection percentage: {:.2f}%, tolerance: {:.2f}%, and userid: {}"
               ).format(infection_percentage * 100, tolerance * 100, userid)
-        return 0
+        return []
 
     # Add the specified user's cc_id into the list of infected_cc_ids
     if userid:
