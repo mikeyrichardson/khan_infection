@@ -1,12 +1,13 @@
 import graph
 import random
 import os
+import networkx as nx
 
 # Assume user data is stored in a database and that
 # all active userids, along with coach relationships
 # can be extracted.
 
-def total_infection(file_name, userid, version):
+def total_infection(file_name, userid):
     """Change the website version of a user along with all related users.
 
     This function changes a user's version of the website and also changes
@@ -22,15 +23,19 @@ def total_infection(file_name, userid, version):
     Returns:
         A list of user ids for all the infected users.
     """
+    graph = nx.Graph()
     userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
-    gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
-    cc = graph.ConnectedComponents(gr)
-    user_cc_id = cc.get_cc_id(userid)
-    cc_members = cc.get_nodes_with_cc_id(user_cc_id)
-    return cc_members
+    for userid, adj_list in userid_adj_list_pairs:
+        if adj_list:
+            for neighbor in adj_list:
+                graph.add_edge(userid, neighbor)
+        else:
+            graph.add_node(userid)
+    ccs = nx.connected_components(graph)
+    return list(len(cc) for cc in ccs)
 
 
-def limited_infection(file_name, version, infection_percentage=0.1,
+def limited_infection(file_name, infection_percentage=0.1,
                       tolerance=0.05, userid=None):
     """Change the website version of a specified amount of active users.
 

@@ -127,14 +127,14 @@ class InfectionTestCase(unittest.TestCase):
     def test_total_infection(self):
         for config in self.test_file_configs:
             file_name = os.path.join(self.test_dir, config['file_name'])
-            affected_users = total_infection(file_name, 'id0000000000001', '1.17')
+            affected_users = total_infection(file_name, 'id0000000000001')
             expected = config['expected_test_total_infection']
             self.assertEqual(len(affected_users), expected)
 
     def test_limited_infection_percentage_10__tolerance_0_percent(self):
         for config in self.test_file_configs:
             file_name = os.path.join(self.test_dir, config['file_name'])
-            affected_users = limited_infection(file_name, '1.34', infection_percentage=0.1, 
+            affected_users = limited_infection(file_name, infection_percentage=0.1, 
                                                tolerance=0, userid=None)
             expected = config['expected_test_limited_infection_percentage_10']
             self.assertEqual(len(affected_users), expected)
@@ -142,7 +142,7 @@ class InfectionTestCase(unittest.TestCase):
     def test_limited_infection_percentage_20_19__tolerance_1_percent(self):
         for config in self.test_file_configs:
             file_name = os.path.join(self.test_dir, config['file_name'])
-            affected_users = limited_infection(file_name, '1.34', infection_percentage=0.2019, 
+            affected_users = limited_infection(file_name, infection_percentage=0.2019, 
                                                tolerance=0.01, userid=None)
             expected = config['expected_test_limited_infection_amount_2019_tolerance_1_percent']
             self.assertEqual(len(affected_users), expected)
