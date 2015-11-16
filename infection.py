@@ -188,26 +188,6 @@ def _find_subset(set_of_ints, lower, upper):
             current_indices.append(i)
         i += 1
 
-def convert_to_list_of_indices(num):
-    """ Convert an int to a list of indices corresponding to the positions
-        of the 1s in its binary representation (least signicant bit at position 0).
-
-    Args:
-        num (int): A positive integer.
-
-    Returns:
-        list: A list of indices corresponding to the positions of the 1s in
-            the binary representation of `num`.
-    """
-    indices = []
-    i = 0
-    while num > 0:
-        if num % 2 == 1:
-            indices.append(i)
-        num = num // 2
-        i += 1
-    return indices
-
 
 # This would be a function to extract the info from
 # a database
