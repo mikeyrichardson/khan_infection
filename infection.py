@@ -66,13 +66,27 @@ def limited_infection(file_name, infection_percentage=0.1,
         A list of user ids for all the infected users.
     """
     graph = nx.Graph()
+    symbol_table = {}
+    inverse_symbol_table = []
     userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
     for userid, adj_list in userid_adj_list_pairs:
+        if userid in symbol_table:
+            user_node = symbol_table[userid]
+        else:
+            user_node = len(inverse_symbol_table)
+            symbol_table[userid] = user_node
+            inverse_symbol_table.append(userid)
         if adj_list:
             for neighbor in adj_list:
-                graph.add_edge(userid, neighbor)
+                if neighbor in symbol_table:
+                    neighbor_node = symbol_table[neighbor]
+                else:
+                    neighbor_node = len(inverse_symbol_table)
+                    symbol_table[neighbor] = neighbor_node
+                    inverse_symbol_table.append(neighbor)
+                graph.add_edge(user_node, neighbor_node)
         else:
-            graph.add_node(userid)
+            graph.add_node(user_node)
     ccs = list(nx.connected_components(graph))
     cc_counts = [len(cc) for cc in ccs]
 
@@ -82,7 +96,7 @@ def limited_infection(file_name, infection_percentage=0.1,
     # user's connected component and find the remaining sum.
     if affected_userid:
         for (i, cc) in enumerate(ccs):
-            if affected_userid in cc:
+            if symbol_table[affected_userid] in cc:
                 affected_user_cc_id = i
                 affected_user_cc_count = cc_counts[i]
                 break
@@ -107,7 +121,7 @@ def limited_infection(file_name, infection_percentage=0.1,
     affected_users = []
     for cc_id in infected_cc_ids:
         affected_users.extend(ccs[cc_id])
-    return affected_users
+    return [inverse_symbol_table[user] for user in affected_users]
 
 
 def _find_indices_of_subset(set_of_ints, target_sum, tolerance=0.05):
