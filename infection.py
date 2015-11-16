@@ -7,7 +7,7 @@ import networkx as nx
 # all active userids, along with coach relationships
 # can be extracted.
 
-def total_infection(file_name, userid):
+def total_infection(file_name, infected_userid):
     """Change the website version of a user along with all related users.
 
     This function changes a user's version of the website and also changes
@@ -16,7 +16,6 @@ def total_infection(file_name, userid):
 
     Args:
         file_name (str): The name of the file containing the user data.
-        version (str): The website version that users will be updated to.
         userid (str): All users related to this userid through coaching
             relationships will be updated to the same website version.
 
@@ -31,8 +30,8 @@ def total_infection(file_name, userid):
                 graph.add_edge(userid, neighbor)
         else:
             graph.add_node(userid)
-    ccs = nx.connected_components(graph)
-    return list(len(cc) for cc in ccs)
+    cc = nx.node_connected_component(graph, infected_userid)
+    return cc
 
 
 def limited_infection(file_name, infection_percentage=0.1,
@@ -53,19 +52,18 @@ def limited_infection(file_name, infection_percentage=0.1,
     Returns:
         A list of user ids for all the infected users.
     """
+    graph = nx.Graph()
     userid_adj_list_pairs = extract_userids_and_adj_lists(file_name)
-    gr = graph.SymbolGraph(iterable_input=userid_adj_list_pairs)
-    cc = graph.ConnectedComponents(gr)
-    cc_counts = cc.get_cc_counts()
-    desired_infections = int(gr.num_nodes * infection_percentage)
-  
-    # If a specific user is desired in the resulting set, remove that
-    # user's connected component and find the remaining sum.
-    if userid:
-        user_cc_id = cc.get_cc_id(userid)
-        user_cc_count = cc.get_count_for_cc_id(user_cc_id)
-        cc_counts = cc_counts[:user_cc_id] + cc_counts[user_cc_id + 1:]
-        desired_infections -= user_cc_count
+    for userid, adj_list in userid_adj_list_pairs:
+        if adj_list:
+            for neighbor in adj_list:
+                graph.add_edge(userid, neighbor)
+        else:
+            graph.add_node(userid)
+    ccs = list(nx.connected_components(graph))
+    cc_counts = [len(cc) for cc in ccs]
+
+    desired_infections = int(graph.number_of_nodes() * infection_percentage)
 
     infected_cc_ids = _find_indices_of_subset(cc_counts, desired_infections,
                                               tolerance=tolerance)
@@ -74,15 +72,11 @@ def limited_infection(file_name, infection_percentage=0.1,
         print ("Couldn't divide the connected components with desired " +
                "infection percentage: {:.2f}%, tolerance: {:.2f}%, and userid: {}"
               ).format(infection_percentage * 100, tolerance * 100, userid)
-        return 0
+        return []
 
-    # Add the specified user's cc_id into the list of infected_cc_ids
-    if userid:
-        infected_cc_ids = [cc_id if cc_id < user_cc_id 
-                                 else cc_id + 1 for cd_id in infected_cc_ids]
     affected_users = []
     for cc_id in infected_cc_ids:
-        affected_users.extend(cc.get_nodes_with_cc_id(cc_id))
+        affected_users.extend(ccs[cc_id])
     return affected_users
 
 
