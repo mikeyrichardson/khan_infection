@@ -1,4 +1,3 @@
-import graph
 import random
 import os
 import networkx as nx
